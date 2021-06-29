@@ -16,7 +16,7 @@ def load_config(file):
             target = json.load(f)
     return target
 
-@pytest.fixture(scope="seesion")
+@pytest.fixture(scope="session")
 def config(request):
     return load_config(request.config.getoption("--target"))
 
@@ -28,11 +28,11 @@ def app(request, config):
         fixture = Application(browser=browser, base_url=config['web']['baseUrl'])
     return fixture
 
-@pytest.fixture(scope="seesion", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def configure_server(request, config):
-    install_server_configuration(config['frt']['host'], config['frt']['username'], config['frt']['password'])
+    install_server_configuration(config['ftp']['host'], config['ftp']['username'], config['ftp']['password'])
     def fin():
-        restore_install_server_configuration(config['frt']['host'], config['frt']['username'], config['frt']['password'])
+        restore_install_server_configuration(config['ftp']['host'], config['ftp']['username'], config['ftp']['password'])
     request.addfinalizer(fin)
 
 def install_server_configuration(host, username, password):
