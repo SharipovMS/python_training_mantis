@@ -1,8 +1,11 @@
 import pytest
+import importlib
 import json
 import os.path
 import ftputil
+import jsonpickle
 from fixture.application import Application
+from fixture.db import DbFixture
 
 
 fixture = None
@@ -43,6 +46,7 @@ def install_server_configuration(host, username, password):
             remote.rename("config_inc.php", "config_inc.php.bak")
         remote.upload(os.path.join(os.path.dirname(__file__),"resources/config_inc.php"), "config_inc.php")
 
+
 def restore_install_server_configuration(host, username, password):
     with ftputil.FTPHost(host, username, password) as remote:
         if remote.path.isfile("config_inc.php.bak"):
@@ -58,7 +62,39 @@ def stop(request):
     request.addfinalizer(fin)
     return fixture
 
+@pytest.fixture
+def check_ui(request):
+    request.config.getoption("--check_ui")
 
 def pytest_addoption(parser):
     parser.addoption("--browser", action="store", default="chrome")
     parser.addoption("--target", action="store", default="target.json")
+    parser.addoption("--check_ui", action="store_true")
+
+def pytest_generate_tests(metafunc):
+    for fixture in metafunc.fixturenames:
+        if fixture.startswith("data_"):
+            testdata = load_from_module(fixture[5:])
+            metafunc.parametrize(fixture, testdata, ids=[str(x) for x in testdata])
+        elif fixture.startswith("json_"):
+            testdata = load_from_json(fixture[5:])
+            metafunc.parametrize(fixture, testdata, ids=[str(x) for x in testdata])
+
+@pytest.fixture(scope="session", autouse=True)
+def db(request):
+    db_config = load_config(request.config.getoption("--target"))['db']
+    dbfixture = DbFixture(host=db_config['host'], name=db_config['name'], user=db_config['user'],
+                          password=db_config['password'])
+
+    def fin():
+        dbfixture.destroy()
+    request.addfinalizer(fin)
+    return dbfixture
+
+def load_from_module(module):
+    return importlib.import_module("data.%s" % module).testdata
+
+
+def load_from_json(file):
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data/%s.json" % file)) as f:
+        return jsonpickle.decode(f.read())

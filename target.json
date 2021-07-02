@@ -1,12 +1,17 @@
 {
   "web": {
-    "baseUrl": "http://localhost/mantisbt-2.25.2",
-    "username": "administrator",
-    "password": "root"
+    "baseUrl": "http://localhost/mantisbt-2.25.2/"
   },
+
   "webadmin": {
     "username": "administrator",
     "password": "root"
+    },
+  "db": {
+    "host": "localhost",
+    "name": "bugtracker",
+    "user": "root",
+    "password": ""
   },
   "ftp": {
     "host": "localhost",
@@ -15,7 +20,7 @@
   },
   "james": {
     "host": "localhost",
-    "port": 4555,
+    "port": "4555",
     "username": "root",
     "password": "root"
   }
