@@ -9,7 +9,7 @@ def random_username(prefix, maxlen):
 def test_signup_new_account(app):
     username = random_username('username_', 10)
     password = "test"
-    email = username + '@localhost'
+    email = username +'@localhost'
     app.james.ensure_user_exists(username, password)
     app.signup.new_user(username, email, password)
     app.soap.can_login(username, email, password)
